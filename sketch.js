@@ -4,27 +4,43 @@ let lights = [];
 let months = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
 let daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
 let today;
+let boxW, boxH, marginX, marginY, startX, startY;
 
 function preload() {
   bg = loadImage('https://raw.githubusercontent.com/nimeo1988/calendario-natale/main/famiglia.jpg');
 }
 
 function setup() {
-  createCanvas(1200, 800);
+  createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   textFont('Georgia');
   today = new Date();
 
-  // Lucine decorative natalizie
+  // Dimensioni riquadri dinamiche per mobile
+  boxW = min(70, width/20);
+  boxH = min(50, height/20);
+  marginX = boxW/4;
+  marginY = boxH/4;
+  startX = 20;
+  startY = 200;
+
+  // Lucine decorative
   for(let i=0;i<50;i++){
-    lights.push({x: random(width), y: random(200), size: random(4,8), col: random([color(255,0,0),color(0,255,0),color(255,215,0)])});
+    lights.push({x: random(width), y: random(150), size: random(4,8), col: random([color(255,0,0),color(0,255,0),color(255,215,0)])});
   }
 }
 
+function windowResized(){
+  resizeCanvas(windowWidth, windowHeight);
+  boxW = min(70, width/20);
+  boxH = min(50, height/20);
+  marginX = boxW/4;
+  marginY = boxH/4;
+}
+
 function draw() {
-  // Sfondo con overlay sfumato
+  // Sfondo foto + overlay
   image(bg,0,0,width,height);
-  noStroke();
   fill(0,50);
   rect(0,0,width,height);
 
@@ -33,15 +49,15 @@ function draw() {
   for(let i=0;i<random(1,5);i++) snowflakes.push(new snowflake());
   for(let f of snowflakes){f.update(t);f.display();}
 
-  // Lucine natalizie scintillanti
+  // Lucine scintillanti
   for(let l of lights){
     fill(l.col);
     ellipse(l.x, l.y + sin(t+l.x)*5, l.size);
   }
 
-  // Messaggio Buon Anno!
+  // Messaggio centrale
+  textSize(min(70,width/15));
   fill(255,0,0);
-  textSize(70);
   text("Buon Anno!", width/2, 80);
 
   // Countdown reale
@@ -53,11 +69,11 @@ function draw() {
   let minutes = floor((diff/(1000*60))%60);
   let seconds = floor((diff/1000)%60);
 
-  textSize(50);
+  textSize(min(50,width/25));
   fill(255,215,0);
   text(`${days}d ${hours}h ${minutes}m ${seconds}s`, width/2, 150);
 
-  // Calendario in griglia elegante
+  // Disegna calendario responsive
   drawCalendar();
 }
 
@@ -76,23 +92,24 @@ function snowflake(){
   this.display=function(){fill(this.color); noStroke(); ellipse(this.posX,this.posY,this.size);}
 }
 
-// Disegna calendario elegante
+// Disegna calendario responsive
 function drawCalendar(){
-  let startX=50,startY=220,boxW=70,boxH=50,marginX=20,marginY=15;
-  textSize(20);
+  textSize(min(20,width/60));
   for(let m=0;m<12;m++){
     // Nome mese
     fill(m%2===0?color(0,128,0):color(255,0,0));
-    text(months[m],startX+m*(boxW+marginX)+boxW/2,startY-35);
+    let monthX = startX + (m%6)*(boxW+marginX);
+    let monthY = startY + floor(m/6)*((boxH*5)+marginY*8);
+    text(months[m], monthX + 3*boxW/2, monthY - 20);
 
-    // Giorni
+    // Giorni in griglia 7 colonne
     for(let d=1;d<=daysInMonth[m];d++){
       let col=(d-1)%7;
       let row=floor((d-1)/7);
-      let x=startX+m*(boxW+marginX)+col*boxW+boxW/2;
-      let y=startY+row*boxH;
+      let x=monthX+col*boxW+boxW/2;
+      let y=monthY+row*boxH;
 
-      // Giorno corrente con effetto glow
+      // Giorno corrente evidenziato
       if(today.getMonth()===m && today.getDate()===d){
         fill(255,215,0,200);
         ellipse(x,y,boxW-10,boxH-10);
