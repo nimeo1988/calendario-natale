@@ -1,6 +1,7 @@
 let bg;
 let snowflakes = [];
 let ornaments = [];
+let lights = [];
 let targetDate;
 let today;
 
@@ -12,7 +13,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(1200, 800);
+  createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   textFont('Georgia');
   today = new Date();
@@ -23,10 +24,21 @@ function setup() {
     targetDate.setFullYear(today.getFullYear()+1);
   }
 
-  // Inizializza le palle di Natale
-  for(let i = 0; i < 15; i++){
+  // Palle di Natale
+  let numOrnaments = width < 600 ? 8 : 15;
+  for(let i = 0; i < numOrnaments; i++){
     ornaments.push(new ornament());
   }
+
+  // Lucine natalizie scintillanti
+  let numLights = width < 600 ? 10 : 30;
+  for(let i = 0; i < numLights; i++){
+    lights.push(new light());
+  }
+}
+
+function windowResized(){
+  resizeCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
@@ -37,22 +49,26 @@ function draw() {
   fill(0, 100);
   rect(0, 0, width, height);
 
+  // Lucine natalizie scintillanti
+  for(let l of lights) l.update().display();
+
   // Neve leggera
   let t = frameCount / 60;
   if(frameCount % 2 === 0) snowflakes.push(new snowflake());
-  for(let f of snowflakes){ f.update(t); f.display(); }
+  for(let f of snowflakes) f.update(t).display();
 
-  // Palle di Natale cadenti
-  for(let o of ornaments){ o.update(); o.display(); }
+  // Palle di Natale cadenti e rimbalzanti
+  for(let o of ornaments) o.update().display();
 
-  // Messaggio "Buon Natale" più in alto
-  textSize(90);
+  // Messaggio "Buon Natale"
+  let titleSize = width < 600 ? 50 : 90;
+  textSize(titleSize);
   fill(255,0,0);
   stroke(255, 215, 0);
   strokeWeight(2);
-  text("Buon Natale!", width/2, 80);
+  text("Buon Natale!", width/2, titleSize);
 
-  // Countdown
+  // Countdown con effetto glitter dorato
   let now = new Date();
   let diff = targetDate - now;
   let days = floor(diff / (1000 * 60 * 60 * 24));
@@ -60,18 +76,23 @@ function draw() {
   let minutes = floor((diff / (1000 * 60)) % 60);
   let seconds = floor((diff / 1000) % 60);
 
-  textSize(60);
-  fill(255, 215, 0);
-  stroke(150, 75, 0);
-  strokeWeight(1.5);
-  text(`${days} giorni\n${hours}h ${minutes}m ${seconds}s`, width/2, height - 150);
+  let countdownSize = width < 600 ? 35 : 60;
+  textSize(countdownSize);
+
+  // Effetto glitter dorato
+  for(let i=0; i<5; i++){
+    fill(255, 215, 0, random(150,255));
+    stroke(255, 215, 0);
+    strokeWeight(random(0.5,2));
+    text(`${days} giorni\n${hours}h ${minutes}m ${seconds}s`, width/2 + random(-2,2), height - 150 + random(-2,2));
+  }
 }
 
 // Classe fiocco di neve
 function snowflake(){
   this.posX = random(width);
   this.posY = random(-50, 0);
-  this.size = random(3,6);
+  this.size = random(width < 600 ? 2 : 3, width < 600 ? 4 : 6);
   this.speed = random(0.5,1.5);
   this.color = random([color(255,255,255,180), color(255,0,0,150), color(0,255,0,150)]);
 
@@ -81,6 +102,7 @@ function snowflake(){
       this.posY = random(-50,0);
       this.posX = random(width);
     }
+    return this;
   }
 
   this.display = function(){
@@ -90,26 +112,55 @@ function snowflake(){
   }
 }
 
-// Classe pallina di Natale
+// Classe pallina di Natale rimbalzante
 function ornament(){
   this.posX = random(width);
   this.posY = random(-100, -50);
-  this.size = random(15, 30);
+  this.size = random(width < 600 ? 10 : 15, width < 600 ? 20 : 30);
   this.speed = random(1, 2);
-  this.color = random([color(255,0,0), color(0,255,0), color(255,215,0)]); // rosso, verde, oro
+  this.bounce = 0;
+
+  this.color = random([color(255,0,0), color(0,255,0), color(255,215,0)]);
 
   this.update = function(){
     this.posY += this.speed;
-    if(this.posY > height){
-      this.posY = random(-100, -50);
-      this.posX = random(width);
+    // rimbalzo leggero quando arriva in basso
+    if(this.posY > height - this.size){
+      this.posY = height - this.size;
+      this.speed = -this.speed * 0.6;
+    } else {
+      this.speed += 0.05; // gravità
     }
+    return this;
   }
 
   this.display = function(){
     fill(this.color);
     stroke(255);
     strokeWeight(1);
+    ellipse(this.posX, this.posY, this.size);
+  }
+}
+
+// Classe lucine natalizie scintillanti
+function light(){
+  this.posX = random(width);
+  this.posY = random(height/2);
+  this.size = random(5,12);
+  this.color = random([color(255,0,0), color(0,255,0), color(255,215,0)]);
+  this.brightness = random(100,255);
+  this.dir = random([1,-1]);
+
+  this.update = function(){
+    this.brightness += this.dir * random(2,5);
+    if(this.brightness > 255) this.dir = -1;
+    if(this.brightness < 100) this.dir = 1;
+    return this;
+  }
+
+  this.display = function(){
+    noStroke();
+    fill(red(this.color), green(this.color), blue(this.color), this.brightness);
     ellipse(this.posX, this.posY, this.size);
   }
 }
