@@ -2,8 +2,8 @@ let bg;
 let snowflakes = [];
 
 function preload() {
-  // Sostituisci 'famiglia.jpg' con il nome della tua foto caricata
-  bg = loadImage('famiglia.jpg'); 
+  // URL diretto della tua immagine
+  bg = loadImage('https://raw.githubusercontent.com/nimeo1988/calendario-natale/main/famiglia.jpg'); 
 }
 
 function setup() {
