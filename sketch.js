@@ -9,16 +9,18 @@ function preload() {
 function setup() {
   createCanvas(1000, 700);
   textAlign(CENTER, CENTER);
-  textSize(50);
-  fill(255);
+  textFont('Georgia');
 }
 
 function draw() {
-  background(bg);
+  // sfondo con foto + leggero overlay per far risaltare testo
+  image(bg, 0, 0, width, height);
+  fill(0, 50); // overlay semi-trasparente
+  rect(0, 0, width, height);
 
-  // neve
+  // neve colorata
   let t = frameCount / 60;
-  for (let i = 0; i < random(1, 5); i++) {
+  for (let i = 0; i < random(1, 4); i++) {
     snowflakes.push(new snowflake());
   }
   for (let flake of snowflakes) {
@@ -26,30 +28,34 @@ function draw() {
     flake.display();
   }
 
-  // conto alla rovescia
-  let now = new Date();
-  let newYear = new Date(now.getFullYear() + 1, 0, 1);
-  let diff = newYear - now;
+  // Countdown fisso sul nuovo anno
+  let days = 0;
+  let hours = 0;
+  let minutes = 0;
+  let seconds = 0;
 
-  let days = floor(diff / (1000 * 60 * 60 * 24));
-  let hours = floor((diff / (1000 * 60 * 60)) % 24);
-  let minutes = floor((diff / (1000 * 60)) % 60);
-  let seconds = floor((diff / 1000) % 60);
+  fill(255, 0, 0); // rosso natalizio
+  textSize(60);
+  text("Buon Anno!", width / 2, height / 2 - 80);
 
-  text(`${days}d ${hours}h ${minutes}m ${seconds}s`, width / 2, height - 50);
+  fill(255, 215, 0); // oro
+  textSize(50);
+  text(`${days}d ${hours}h ${minutes}m ${seconds}s`, width / 2, height / 2);
 
-  // semplice calendario mesi base
+  // semplice calendario mesi base colorato
   drawMonths();
 }
 
 function snowflake() {
   this.posX = random(0, width);
   this.posY = random(-50, 0);
-  this.size = random(2, 5);
+  this.size = random(3, 7);
   this.speed = random(1, 3);
+  this.color = random([color(255,0,0,200), color(0,255,0,200), color(255,255,255,200)]); // rosso, verde, bianco
 
   this.update = function(time) {
     this.posY += this.speed;
+    this.posX += sin(time + this.posY * 0.01) * 1.5; // oscillazione per effetto più naturale
     if (this.posY > height) {
       this.posY = random(-50, 0);
       this.posX = random(0, width);
@@ -58,16 +64,17 @@ function snowflake() {
 
   this.display = function() {
     noStroke();
-    fill(255);
+    fill(this.color);
     ellipse(this.posX, this.posY, this.size);
   };
 }
 
 function drawMonths() {
-  textSize(20);
-  fill(255);
+  textSize(22);
   let months = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
   for (let i = 0; i < 12; i++) {
+    let c = (i % 2 == 0) ? color(0, 128, 0) : color(255, 0, 0); // verde e rosso alternati
+    fill(c);
     text(months[i], 80 + i * 80, 50);
   }
 }
