@@ -5,26 +5,28 @@ let daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
 let today;
 
 function preload() {
-  // URL diretto della tua immagine
+  // Foto della famiglia (URL diretto)
   bg = loadImage('https://raw.githubusercontent.com/nimeo1988/calendario-natale/main/famiglia.jpg'); 
 }
 
 function setup() {
-  createCanvas(1000, 700);
+  createCanvas(1200, 800);
   textAlign(CENTER, CENTER);
   textFont('Georgia');
   today = new Date();
 }
 
 function draw() {
-  // Sfondo foto con overlay per far risaltare testo
+  background(0);
+
+  // Foto di famiglia sfumata
   image(bg, 0, 0, width, height);
   fill(0, 50); // overlay semi-trasparente
   rect(0, 0, width, height);
 
-  // Neve colorata
+  // Neve animata
   let t = frameCount / 60;
-  for (let i = 0; i < random(1, 4); i++) {
+  for (let i = 0; i < random(1, 5); i++) {
     snowflakes.push(new snowflake());
   }
   for (let flake of snowflakes) {
@@ -32,25 +34,21 @@ function draw() {
     flake.display();
   }
 
-  // Countdown fisso sul nuovo anno
-  let days = 0;
-  let hours = 0;
-  let minutes = 0;
-  let seconds = 0;
-
-  textSize(60);
+  // Messaggio centrale
+  textSize(70);
   fill(255, 0, 0);
-  text("Buon Anno!", width / 2, height / 2 - 100);
+  text("Buon Anno!", width / 2, 80);
 
+  // Countdown fisso
   textSize(50);
   fill(255, 215, 0);
-  text(`${days}d ${hours}h ${minutes}m ${seconds}s`, width / 2, height / 2);
+  text("0d 0h 0m 0s", width / 2, 150);
 
-  // Disegna il calendario completo
-  drawFullCalendar();
+  // Disegna calendario
+  drawCalendarGrid();
 }
 
-// Snowflake class
+// Classe fiocco di neve
 function snowflake() {
   this.posX = random(0, width);
   this.posY = random(-50, 0);
@@ -74,30 +72,37 @@ function snowflake() {
   };
 }
 
-// Disegna calendario completo
-function drawFullCalendar() {
+// Disegna il calendario in griglia
+function drawCalendarGrid() {
   let startX = 50;
-  let startY = 400;
-  let boxSize = 60;
-  let marginX = 10;
-  let marginY = 10;
+  let startY = 220;
+  let boxW = 80;
+  let boxH = 50;
+  let marginX = 20;
+  let marginY = 20;
 
   textSize(22);
-
   for (let m = 0; m < 12; m++) {
-    // Nome mese
-    fill(m % 2 == 0 ? color(0,128,0) : color(255,0,0));
-    text(months[m], startX + m * (boxSize+marginX), startY - 30);
+    // Nome del mese
+    fill(m % 2 === 0 ? color(0,128,0) : color(255,0,0));
+    text(months[m], startX + m * (boxW + marginX) + boxW/2, startY - 40);
 
-    // Giorni del mese
+    // Giorni in griglia (7 colonne)
     for (let d = 1; d <= daysInMonth[m]; d++) {
-      let x = startX + m * (boxSize+marginX);
-      let y = startY + (d-1) * (boxSize/2);
+      let col = (d - 1) % 7;
+      let row = floor((d - 1) / 7);
+      let x = startX + m * (boxW + marginX) + col * boxW + boxW/2;
+      let y = startY + row * boxH;
+
+      // Evidenzia giorno corrente
       if (today.getMonth() === m && today.getDate() === d) {
-        fill(255,215,0); // oro giorno attuale
+        fill(255, 215, 0); // oro
+        rect(x - boxW/2 + 5, y - boxH/2 + 5, boxW - 10, boxH - 10, 10);
+        fill(0);
       } else {
         fill(255);
       }
+
       text(d, x, y);
     }
   }
